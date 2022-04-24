@@ -1,0 +1,181 @@
+#Imports 
+import speech_recognition as sr
+from googlesearch import search
+import pyttsx3
+import pywhatkit
+import datetime
+import wikipedia
+import pyjokes
+import sys
+import subprocess as sp
+import requests
+import smtplib
+import requests
+import os
+from pprint import pprint
+
+listener = sr.Recognizer()
+engine = pyttsx3.init()
+voices = engine.getProperty('voices')
+engine.setProperty('voice', voices[1].id)
+
+
+def talk(text):
+    engine.say(text)
+    engine.runAndWait()
+
+def take_command():
+    try:
+        with sr.Microphone() as source:
+            print('listening...')
+            voice = listener.listen(source)
+            command = listener.recognize_google(voice)
+            command = command.lower()
+            if 'Lucky' in command:
+                command = command.replace('Lucky', '')
+                print(command)
+    except:
+        pass
+    return command
+    
+def wishMe():
+    talk("Welcome back sir")
+    hour = int(datetime.datetime.now().hour)
+    print(hour)
+    year = int(datetime.datetime.now().year)
+    month = int(datetime.datetime.now().month)
+    date = int(datetime.datetime.now().day)
+    Time = datetime.datetime.now().strftime("%I:%M:%S") 
+    print(Time)
+    print(date)
+    print(month)
+    print(year)
+    talk("the current Time is")
+    talk(Time)
+    talk("the current Date is")
+    talk(date)
+    talk(month)
+    talk(year)
+    if hour>=6 and hour<12:
+        talk("Good Morning")
+
+    elif hour>=12 and hour<18:
+        talk("Good Afternoon")
+
+    elif hour>=18 and hour<24:
+        talk("Good Evening")
+
+    else:
+        talk("Good Night")
+
+    talk("Hello my name is Lucky how may I help?")
+
+
+def run_lucky():
+    command = take_command()
+    print(command)
+
+    #Responds when the user says hello
+    if "hello" in command:
+        talk("Greetings")
+
+    #Plays a song on youtube
+    elif 'play' in command:
+        song = command.replace('play', '')
+        talk('playing ' + song)
+        pywhatkit.playonyt(song)
+    
+    #Opens predefine applications
+    elif "open" in command: 
+        if "calculator" in command:
+            sp.Popen('C:\\Windows\\System32\\calc.exe')
+            talk('Opening Calculator')
+        if "notepad" in command:
+            sp.Popen('C:\\Windows\\System32\\notepad.exe')
+            talk('Opening notepad')
+        if "wordpad" in command:
+            sp.Popen('C:\\Windows\\System32\\write.exe')
+            talk('Opening wordpad')
+        if "paint" in command:
+            sp.Popen('C:\\Windows\\system32\mspaint.exe')
+            talk('Opening paint')
+
+    #Tells the current Weather
+    elif 'how is the weather' and 'weather' in command:
+
+            url = 'https://api.openweathermap.org/'
+
+            res = requests.get(url)
+
+            data = res.json()
+
+            weather = data['weather'] [0] ['main'] 
+            temp = data['main']['temp']
+            wind_speed = data['wind']['speed']
+
+            latitude = data['coord']['lat']
+            longitude = data['coord']['lon']
+
+            description = data['weather'][0]['description']
+            talk('Temperature : {} degree celcius'.format(temp))
+            print('Wind Speed : {} m/s'.format(wind_speed))
+            print('Latitude : {}'.format(latitude))
+            print('Longitude : {}'.format(longitude))
+            print('Description : {}'.format(description))
+            print('weather is: {} '.format(weather))
+            talk('weather is : {} '.format(weather))
+
+    #Tells the current time
+    elif 'time' in command:
+        time = datetime.datetime.now().strftime('%I:%M %p')
+        talk('Current time is ' + time)
+
+    #Goes to google and seach for anything
+    elif 'search' in command:
+            talk('What do you want to search?')
+            with sr.Microphone() as source:
+                print('listening...')
+                voice = listener.listen(source)
+                command = listener.recognize_google(voice)
+                command = command.lower()
+                print(command)
+            for i in search(command, tld="co.in", num=5, stop=5, pause=2):
+                print(i)
+
+    #Says the bio about the figure searched
+    elif 'who is' in command:
+        person = command.replace('who is', '')
+        info = wikipedia.summary(person, 1)
+        print(info)
+        talk(info)
+
+    #Goes to wikipidia and tells an short resume about the subject searched for
+    elif 'what is' in command:
+        subject = command.replace('what is', '')
+        info = wikipedia.summary(subject, 1)
+        print("According to wikipedia, "+info)
+    
+    #My own joke
+    elif 'are you single' in command:
+        talk('I am in a relationship with wifi')
+
+    #Opens any applications in the system
+    elif 'open' in command:
+            os.system('explorer C://{}'.format(command.replace('Open','')))
+
+    #Tells a joke 
+    elif 'joke' in command:
+        talk(pyjokes.get_joke())
+
+    #Closes the program
+    elif "shutdown" in command:
+            talk("Goodbye")
+            print("Goodbye")
+            sys.exit()
+
+    else:
+        talk('Please say the command again.')
+
+
+while True:
+    run_lucky()
